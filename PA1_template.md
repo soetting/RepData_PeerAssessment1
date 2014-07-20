@@ -13,8 +13,8 @@ The first set of commands is to download the data file and load into the R progr
 
 *Important* : Before running any code, please be sure to set up to the intended working directory. Since the directory naming conventions differ across operating systems, the specific code is not included within this file. This step should be run beforehand.
 
-```{r File Download and Load, echo=TRUE, results='asis' }
 
+```r
 file.link = 
     c("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip") ;
 download.file( file.link, destfile = "ActivityMonitoringData.zip" )
@@ -28,15 +28,14 @@ download.session.info <- sessionInfo()
 
 unzip("ActivityMonitoringData.zip")
 activity = read.csv("activity.csv")
-
 ```
 
 ## Part 2: What is mean total number of steps taken per day?
 
 The initial review of this data centers around the total number of steps taken for each day which is displayed in a histogram plot and the average and median values of the number of steps are calculated and reported.  
 
-```{r Total Steps by Day, echo=TRUE, fig.height=12, fig.width=12}
 
+```r
 # Summarize the number of steps by total, average, and median value for each
 # day utilizing ddply() and storing it in the dailysteps variable.
 
@@ -55,7 +54,11 @@ ggplot(dailysteps, aes( x = date, y = totalsteps)) +
     theme(plot.title = element_text(size = rel(1.75))) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5,
                                      color = "black", size = rel(1)))
+```
 
+![plot of chunk Total Steps by Day](figure/Total Steps by Day.png) 
+
+```r
 # Report the total, mean, and median values by day in a table. The column names
 # of the dailysteps variable are modified to make the table look presentable.
 
@@ -63,14 +66,14 @@ dailysteps.mean = mean( dailysteps$totalsteps, na.rm = TRUE )
 dailysteps.median = median( dailysteps$totalsteps, na.rm = TRUE )
 ```
 
-The **average (mean) number of steps taken each day is ```r dailysteps.mean```** and **the median number of steps taken each day is ```r dailysteps.median```.**
+The **average (mean) number of steps taken each day is ``9354.23``** and **the median number of steps taken each day is ``10395``.**
 
 ## Part 3: What is the average daily activity pattern?
 
 Next, the activity across the time of day is reviewed with the creation of the a line graph depicting the average activity across time of day and the calculation of the daily interval with the largest average number of steps.
 
-```{r Average Daily Activity, echo=TRUE, fig.height=12, fig.width=12 }
 
+```r
 intervalsteps = ddply(activity, .(interval), summarize, 
                    meansteps = mean(steps, na.rm = TRUE))
 
@@ -79,11 +82,15 @@ ggplot( intervalsteps, aes(x=interval, y=meansteps)) + geom_line() +
     ylab( "Average Number of Steps") +
     ggtitle( "Average Number of Steps by Time of Day") + 
     theme(plot.title = element_text(size = rel(1.75)))
+```
 
+![plot of chunk Average Daily Activity](figure/Average Daily Activity.png) 
+
+```r
 intervalmax = intervalsteps$interval[which.max(intervalsteps$meansteps)]        
 ```
 
-**The interval with the maximum number of steps (on average across all the days in the dataset) is interval #```r intervalmax```.**
+**The interval with the maximum number of steps (on average across all the days in the dataset) is interval #``835``.**
 
 ## Part 4: Imputing Missing Values
 
@@ -93,8 +100,8 @@ This section will review the dataset to determine if there are any missing value
 
 2. If there are any missing values for the steps, then those values will be replaced with the average number of steps for that interval across all days will measured values.
 
-```{r Imputing Missing Values, echo=TRUE, fig.height=12, fig.width=12 }
 
+```r
 dates.mv = sum(is.na(activity$date))
 intervals.mv = sum(is.na(activity$interval))
 
@@ -130,16 +137,19 @@ ggplot(dailysteps.revised, aes( x = date, y = totalsteps)) +
     theme(plot.title = element_text(size = rel(1.75))) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5,
                                      color = "black", size = rel(1)))
+```
 
+![plot of chunk Imputing Missing Values](figure/Imputing Missing Values.png) 
 
+```r
 dailysteps.revised.mean = mean( dailysteps.revised$totalsteps, na.rm = TRUE )
 dailysteps.revised.median = median( dailysteps.revised$totalsteps, na.rm = TRUE)
 ```
 
 With the adjustments made for the NA values in the data set, the new mean and median values are as follows:
 
-- The new average value for the number of steps per day is ```r dailysteps.revised.mean``` as compared to ```r dailysteps.mean``` before the adjustments were made.
-- The new median value for the number of steps per day is ```r dailysteps.revised.median``` as compared to ```r dailysteps.median``` before the adjustments were made.
+- The new average value for the number of steps per day is ``10766.19`` as compared to ``9354.23`` before the adjustments were made.
+- The new median value for the number of steps per day is ``10766.19`` as compared to ``10395`` before the adjustments were made.
 
 Due to the methodology used for replacing NA values, it is not surprising that the mean and median values are equal as many of the NA values are across the same day. For those days which have no values during any of that day's intervals, then the average and median would simply be the average value across all days.
 
@@ -151,8 +161,8 @@ The new plot indicates that there are still a couple of days where there is a lo
 The final section looks at the differences in activity level, as measured by the number of steps, between days occuring on the weekend as opposed to the normal working week. Two line graphs are presented to illustrate the differences.
 
 
-``` {r Patterns between Type of Day, echo=TRUE, fig.height=12, fig.width=12  }
 
+```r
 activity$day = weekdays( as.Date(activity$date, "%Y-%m-%d") )
 
 weekend.values = c("Saturday", "Sunday")
@@ -169,6 +179,8 @@ ggplot( stepsbyday, aes(x=interval, y=meansteps)) + geom_line() +
     xlab("Interval") +
     ggtitle("Activity Levels: Weekends vs. Weekdays") + 
     theme(plot.title = element_text(size = rel(1.75)))
-```    
+```
+
+![plot of chunk Patterns between Type of Day](figure/Patterns between Type of Day.png) 
 
 This graph indicates the, during the weekends, the subject had less activity during the 8:00 to 8:45 intervals but more activity from the 10 AM to 2 PM timeframe. 
